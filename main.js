@@ -1,13 +1,14 @@
+const http = require('http');
 const https = require('https');
-const fs = require('fs');
+//const fs = require('fs');
 var btoa = require('btoa');
 var mysql = require('mysql');
 var TEMPLATE = "{0} :\n{1}";
 
-const httpsOptions = {
+/*const httpsOptions = {
   key: fs.readFileSync('key.pem'),
   cert: fs.readFileSync('cert.pem')
-};
+};*/
 var options = {
   hostname: 'api.twilio.com',
   port: 443,
@@ -104,7 +105,7 @@ function getWhatsMessage(contact, message){
 	uriQry +='Body='+message;
 	return encodeURIData(uriQry);
 }
-https.createServer(httpsOptions, function (req, res) {
+http.createServer(function (req, res) {
 	var body = [];
 	if(req.method === 'POST'){
 		req.on('data', (chunk) => {
@@ -141,4 +142,4 @@ https.createServer(httpsOptions, function (req, res) {
 	}
   res.writeHead(200);
   res.end("Message sent\n");
-}).listen(5443);
+}).listen(8080);
