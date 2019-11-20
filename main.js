@@ -1,7 +1,7 @@
 const http = require('http');
 const https = require('https');
 //const fs = require('fs');
-var btoa = require('btoa');
+//var btoa = require('btoa');
 var mysql = require('mysql');
 var TEMPLATE = "{0} :\n{1}";
 
