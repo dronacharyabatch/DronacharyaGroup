@@ -12,11 +12,11 @@ var TEMPLATE = "{0} :\n{1}";
 var options = {
   hostname: 'api.twilio.com',
   port: 443,
-  path: '/2010-04-01/Accounts/AC11d13e6a48dc20dbfb4f4855856c006b/Messages.json',
+  path: '/2010-04-01/Accounts/AC54c8d9f580eb20876f4c0b300a04ed46/Messages.json',
   method: 'POST',
   headers: {
        'Content-Type': 'application/x-www-form-urlencoded',
-       "Authorization": "Basic " + btoa("AC11d13e6a48dc20dbfb4f4855856c006b:2f2b2e570f9ec7510033220f298c8951")
+       "Authorization": "Basic " + btoa("AC54c8d9f580eb20876f4c0b300a04ed46:bc1f668476b8c794d425798a23cc5437")
      }
 };
 // Initialize pool
@@ -70,9 +70,10 @@ function executeQuery(query,callback){
                 callback(null, rows);
             }           
         });
-        connection.on('error', function(err) {      
-              throw err;
-              return;     
+        connection.on('error', function(err) {
+			console.log(err);
+              /*throw err;
+              return;   */  
         });
     });
 }
@@ -99,43 +100,65 @@ function getWhatsMessage(contact, message){
 	var uriQry = '';
 	var idx=0;
 	uriQry +='To='+contact.mobile+'&';
-	uriQry +='From=whatsapp:+14155238886&MessagingServiceSid=MGc4e79cdce326bc33ae1d5f46c823a5fc&';
-	if(contact['MediaUrl'])
-		uriQry +='MediaUrl='+contact['MediaUrl']+'&';
+	uriQry +='From=whatsapp:+14155238886&';
+	if(contact['MediaUrl']){
+		contact['MediaUrl'].forEach((mediaUrl) => {
+			uriQry +='MediaUrl='+mediaUrl+'&';
+		});
+		
+	}
 	uriQry +='Body='+message;
 	return encodeURIData(uriQry);
+}
+function status(reqData){
+	console.log('statusCallback');
+	console.log(reqData);
+}
+function recieved(reqData){
+	var group = [];
+	var sender;
+	executeQuery('select * from dronabatch', (status, result)=>{
+		result.forEach((item, index) =>{
+			if(item.is_block !== 0)
+				return;
+			if(reqData.From === item.mobile){
+				sender = item;
+				return;
+			}
+			group.push(item);
+			
+		});
+		var message = formatMsg(TEMPLATE, [ sender.sname, reqData.Body ]);
+		var MediaContentType0 = reqData["MediaContentType0"];
+		var mediaUris = [];
+		if (MediaContentType0 != null && MediaContentType0.trim().length > 0) {
+			var idx=0;
+			while(reqData["MediaUrl"+idx] !== undefined){
+				mediaUris.push(reqData["MediaUrl"+idx]);
+				idx++;
+			}
+		}
+		group.forEach((item, index) =>{
+			if (mediaUris.length > 0) {
+				item['MediaUrl'] = mediaUris;
+			}
+			doMessage(getWhatsMessage(item, message));
+		});
+	});
 }
 http.createServer(function (req, res) {
 	var body = [];
 	if(req.method === 'POST'){
+		console.log(req.url);
 		req.on('data', (chunk) => {
 		body.push(chunk);
 		}).on('end', () => {
 			var bodyMsg = Buffer.concat(body).toString();
 			var reqData = QueryStringToJSON(decodeURIComponent(bodyMsg));
-			var group = [];
-			var sender;
-			executeQuery('select * from dronabatch', (status, result)=>{
-				result.forEach((item, index) =>{
-					if(item.is_block !== 0)
-						return;
-					if(reqData.From === item.mobile){
-						sender = item;
-						return;
-					}
-					group.push(item);
-					
-				});
-				var message = formatMsg(TEMPLATE, [ sender.sname, reqData.Body ]);
-				var MediaContentType0 = reqData["MediaContentType0"];
-				group.forEach((item, index) =>{
-					if (MediaContentType0 != null && MediaContentType0.trim().length > 0) {
-						var mediaUris = [];
-						item['MediaUrl'] = reqData["MediaUrl0"];
-					}
-					doMessage(getWhatsMessage(item, message));
-				});
-			});
+			if('/recieved' === req.url)
+				recieved(reqData);
+			else if('/status' === req.url)
+				status(reqData);
 
 		});
 		
