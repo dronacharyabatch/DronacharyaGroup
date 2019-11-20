@@ -1,7 +1,7 @@
 const http = require('http');
 const https = require('https');
 //const fs = require('fs');
-var btoa = require('btoa');
+//var btoa = require('btoa');
 var mysql = require('mysql');
 var TEMPLATE = "{0} :\n{1}";
 
@@ -16,7 +16,7 @@ var options = {
   method: 'POST',
   headers: {
        'Content-Type': 'application/x-www-form-urlencoded',
-       "Authorization": "Basic " + btoa("AC54c8d9f580eb20876f4c0b300a04ed46:bc1f668476b8c794d425798a23cc5437")
+       "Authorization": "Basic QUM1NGM4ZDlmNTgwZWIyMDg3NmY0YzBiMzAwYTA0ZWQ0NjpiYzFmNjY4NDc2YjhjNzk0ZDQyNTc5OGEyM2NjNTQzNw=="
      }
 };
 // Initialize pool
