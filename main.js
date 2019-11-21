@@ -1,14 +1,8 @@
 const http = require('http');
 const https = require('https');
 //const fs = require('fs');
-//var btoa = require('btoa');
 var mysql = require('mysql');
 var TEMPLATE = "{0} :\n{1}";
-
-/*const httpsOptions = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
-};*/
 var options = {
   hostname: 'api.twilio.com',
   port: 443,
@@ -77,6 +71,31 @@ function executeQuery(query,callback){
         });
     });
 }
+function add2Db(reqData, callback){
+	console.log(reqData);
+	var isBlock = 0;
+	if("on" === reqData.is_block)
+		isBlock = 1;
+	var query = "INSERT INTO dronabatch(sname, mobile, is_block) VALUES ('"+reqData.sname+"', '"+reqData.mobile+"', "+isBlock+")";
+	pool.getConnection(function(err,connection){
+        if (err) {
+          connection.release();
+          throw err;
+        }   
+        connection.query(query,function(err,rows){
+            connection.release();
+            if(!err) {
+				callback();
+                //callback(null, rows);
+            }           
+        });
+        connection.on('error', function(err) {
+			console.log(err);
+              /*throw err;
+              return;   */  
+        });
+    });
+}
 function QueryStringToJSON(str) {
 	var pairs = str.split('&');
 	var result = {};
@@ -115,6 +134,18 @@ function status(reqData){
 	console.log(reqData);
 }
 function recieved(reqData){
+	if(reqData.Body.startsWith('add:')){
+		register(reqData);
+	}else{
+		process(reqData);
+	}
+}
+function register(reqData){
+	executeQuery("select mobile,sname,role from dronabatch where mobile='"+reqData.From+"'", (status, result)=>{
+		doMessage(getWhatsMessage({mobile:reqData.From}, "contact registered."));
+	});
+}
+function process(reqData){
 	var group = [];
 	var sender;
 	executeQuery('select * from dronabatch', (status, result)=>{
@@ -148,22 +179,26 @@ function recieved(reqData){
 	});
 }
 http.createServer(function (req, res) {
+	var fMsg = "Message sent\n";
 	var body = [];
+	console.log(req.url);
 	if(req.method === 'POST'){
-		console.log(req.url);
 		req.on('data', (chunk) => {
 		body.push(chunk);
 		}).on('end', () => {
 			var bodyMsg = Buffer.concat(body).toString();
 			var reqData = QueryStringToJSON(decodeURIComponent(bodyMsg));
-			if('/recieved' === req.url)
+			if('/recieved' === req.url){
 				recieved(reqData);
-			else if('/status' === req.url)
+			}else if('/status' === req.url){
 				status(reqData);
-
+			}
+			console.log(fMsg);
+		  res.writeHead(200);
+		  res.end(fMsg);
 		});
-		
+	}else{
+		res.end('Requested resource Not available.');
+		res.writeHead(200);
 	}
-  res.writeHead(200);
-  res.end("Message sent\n");
 }).listen(8080);
