@@ -105,10 +105,13 @@ function getWhatsMessage(contact, message){
 		});
 		
 	}
-	uriQry +='Body='+message;
+	uriQry +='Body='+cleanBody(message);
 	uriQry = encodeURIData(uriQry);
 	console.log('uriQry :: '+uriQry);
 	return uriQry;
+}
+function cleanBody(message){
+	return message.replace(/\+/g, ' ');
 }
 function status(reqData){
 	console.log('statusCallback');
