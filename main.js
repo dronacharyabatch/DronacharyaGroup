@@ -25,8 +25,8 @@ var pool      =    mysql.createPool({
 function doMessage(strQuery, callback){
 	//strQuery = encodeURIData(strQuery);
 	var req = https.request(options, (res) => {
-	  console.log('statusCode:', res.statusCode);
-	  console.log('headers:', res.headers);
+	  //console.log('statusCode:', res.statusCode);
+	  //console.log('headers:', res.headers);
 
 	  res.on('data', (d) => {
 		console.log(d.toString());
@@ -106,11 +106,13 @@ function getWhatsMessage(contact, message){
 		
 	}
 	uriQry +='Body='+message;
-	return encodeURIData(uriQry);
+	uriQry = encodeURIData(uriQry);
+	console.log('uriQry :: '+uriQry);
+	return uriQry;
 }
 function status(reqData){
 	console.log('statusCallback');
-	console.log(reqData);
+	//console.log(reqData);
 }
 function findBodyJson(opr, reqData){
 	reqData.Body = reqData.Body.replace(opr, '');
@@ -256,6 +258,7 @@ function processGroup(reqData, callback){
 		});
 		console.log(sender);
 		var message = formatMsg(TEMPLATE, [ sender.name, reqData.Body ]);
+		console.log("message :: "+message);
 		var MediaContentType0 = reqData["MediaContentType0"];
 		var mediaUris = [];
 		if (MediaContentType0 != null && MediaContentType0.trim().length > 0) {
