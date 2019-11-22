@@ -117,8 +117,11 @@ function status(reqData){
 	console.log('statusCallback');
 	//console.log(reqData);
 }
-function findBodyJson(opr, reqData){
-	reqData.Body = reqData.Body.replace(opr, '');
+function findBodyJson(reqData){
+	var pos = reqData.Body.indexOf(':');
+	if(pos >-1){
+		reqData.Body = reqData.Body.substr(pos+1, reqData.Body.length);
+	}
 	var data = reqData.Body.split(':');
 	reqData.BodyJson = {};
 	for(var idx=0; idx<data.length; idx+=2){
@@ -129,8 +132,9 @@ function findBodyJson(opr, reqData){
 		reqData.BodyJson[name] = bgData;
 	}
 }
+
 function recieved(reqData, callback){
-	if(!reqData.Body.startsWith('find:') && !reqData.Body.startsWith('add:') && !reqData.Body.startsWith('del:')){
+	if(!reqData.Body.toLowerCase().startsWith('find:') && !reqData.Body.toLowerCase().startsWith('add:') && !reqData.Body.toLowerCase().startsWith('del:')){
 		processGroup(reqData, callback);
 		return;
 	}
@@ -139,15 +143,22 @@ function recieved(reqData, callback){
 			doMessage(getWhatsMessage({mobile:reqData.From}, "You must be Admin"), callback);
 			return;
 		}
-		if(reqData.Body.startsWith('find:')){
-			findBodyJson('find:', reqData);
+		if(reqData.Body.toLowerCase().startsWith('find:')){
+			var message = 'Contact Not Found';
+			findBodyJson(reqData);
 			find(reqData.BodyJson, function(result){
-				var mobile = result.mobile.replace('whatsapp:+91','');
-				doMessage(getWhatsMessage({mobile:reqData.From}, "name : "+result.name+"\nmobile : "+mobile+"\nisBlocked : "+((result.is_block === 1)?'Yes':'No')), callback);			
+				if(result){
+					message = formatMessage({BodyJson : result}, '');
+				}
+				doMessage(getWhatsMessage({mobile:reqData.From}, message), callback);
+				
+				//var mobile = result.mobile.replace('whatsapp:+91','');
+				//doMessage(getWhatsMessage({mobile:reqData.From}, "name : "+result.name+"\nmobile : "+mobile+"\nisBlocked : "+((result.is_block === 1)?'Yes':'No')), callback);			
+				
 			});
-		}else if(reqData.Body.startsWith('add:')){
+		}else if(reqData.Body.toLowerCase().startsWith('add:')){
 			var message = 'Contact Not Added.';
-			findBodyJson('add:', reqData);
+			findBodyJson(reqData);
 			find(reqData.BodyJson, function(result){
 				if(result){
 					remove(result, function(result1){
@@ -169,9 +180,9 @@ function recieved(reqData, callback){
 					});
 				}
 			});
-		}else if(reqData.Body.startsWith('del:')){
+		}else if(reqData.Body.toLowerCase().startsWith('del:')){
 			var message = 'Contact Not Found';
-			findBodyJson('del:', reqData);
+			findBodyJson(reqData);
 			find(reqData.BodyJson, function(result){
 				if(result){
 					remove(result, function(result1){
@@ -190,11 +201,13 @@ function recieved(reqData, callback){
 function formatMessage(reqData, endMsg){
 	var message = '';
 	if(reqData.BodyJson.name)
-		message += "name : "+reqData.BodyJson.name;
+		message += "Name    : "+reqData.BodyJson.name;
 	if(reqData.BodyJson.mobile){
 		var mobile = reqData.BodyJson.mobile.replace('whatsapp:+91','');
-		message += "\nmobile : "+mobile;
+		message += "\nMobile   : "+mobile;
 	}
+	if(reqData.BodyJson.name)
+		message += "\nBlocked : "+((reqData.BodyJson.is_block === 1)?'Yes':'No');
 	message += endMsg;
 	return message;
 }
