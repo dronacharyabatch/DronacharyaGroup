@@ -312,7 +312,7 @@ function processGroup(reqData, callback){
 			if (mediaUris.length > 0) {
 				item['MediaUrls'] = mediaUris;
 			}
-			doMessage(getWhatsMessage(item, message), callback, msgOpts);
+			doMessage(getWhatsMessage(item, message), callback);
 			return;
 		});
 	});
