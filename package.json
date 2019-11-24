@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
 	"http": "0.0.0",
+	"btoa": "^1.2.1",
     "https": "^1.0.0",
     "mysql": "^2.17.1"
   }

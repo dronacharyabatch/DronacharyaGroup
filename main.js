@@ -296,12 +296,12 @@ function processGroup(reqData, callback){
 http.createServer(function (req, res) {
 	var fMsg = "Message sent\n";
 	var body = [];
-	//console.log(req.url);
+	console.log(req.headers);
 	if(req.method === 'POST'){
 		req.on('data', (chunk) => {
 		body.push(chunk);
 		}).on('end', () => {
-			var bodyMsg = Buffer.concat(body).toString();
+			var bodyMsg = Buffer.concat(body).toString('utf8');
 			console.log(bodyMsg);
 			var reqData = QueryStringToJSON(decodeURIComponent(bodyMsg));
 			if('/recieved' === req.url){
