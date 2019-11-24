@@ -25,7 +25,7 @@ var pool      =    mysql.createPool({
     debug    :  false
 });
 function doMessage(strQuery, callback){
-	console.log(msgOptions);
+	//console.log(msgOptions);
 	var req = https.request(msgOptions, (res) => {
 	  res.on('data', (d) => {
 	  });
