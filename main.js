@@ -29,7 +29,7 @@ function doMessage(strQuery, callback){
 	  //console.log('headers:', res.headers);
 
 	  res.on('data', (d) => {
-		console.log(d.toString());
+		//console.log(d.toString());
 	  });
 	});
 
@@ -107,14 +107,14 @@ function getWhatsMessage(contact, message){
 	}
 	uriQry +='Body='+cleanBody(message);
 	uriQry = encodeURIData(uriQry);
-	console.log('uriQry :: '+uriQry);
+	//console.log('uriQry :: '+uriQry);
 	return uriQry;
 }
 function cleanBody(message){
 	return message.replace(/\+/g, ' ');
 }
 function status(reqData){
-	console.log('statusCallback');
+	//console.log('statusCallback');
 	//console.log(reqData);
 }
 function findBodyJson(reqData){
@@ -274,7 +274,7 @@ function processGroup(reqData, callback){
 		});
 		console.log(sender);
 		var message = formatMsg(TEMPLATE, [ sender.name, reqData.Body ]);
-		console.log("message :: "+message);
+		//console.log("message :: "+message);
 		var MediaContentType0 = reqData["MediaContentType0"];
 		var mediaUris = [];
 		if (MediaContentType0 != null && MediaContentType0.trim().length > 0) {
@@ -296,12 +296,13 @@ function processGroup(reqData, callback){
 http.createServer(function (req, res) {
 	var fMsg = "Message sent\n";
 	var body = [];
-	console.log(req.url);
+	//console.log(req.url);
 	if(req.method === 'POST'){
 		req.on('data', (chunk) => {
 		body.push(chunk);
 		}).on('end', () => {
 			var bodyMsg = Buffer.concat(body).toString();
+			console.log(bodyMsg);
 			var reqData = QueryStringToJSON(decodeURIComponent(bodyMsg));
 			if('/recieved' === req.url){
 				recieved(reqData, (status)=> {
@@ -314,7 +315,7 @@ http.createServer(function (req, res) {
 					res.end(fMsg);
 				});
 			}
-			console.log(fMsg);
+			//console.log(fMsg);
 		  
 		});
 	}else{
