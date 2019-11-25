@@ -296,7 +296,7 @@ function processGroup(reqData, callback){
 			group.push(item);
 			
 		});
-		console.log(sender);
+		//console.log(sender);
 		var message = formatMsg(TEMPLATE, [ sender.name, reqData.Body ]);
 		//console.log("message :: "+message);
 		var MediaContentType0 = reqData["MediaContentType0"];
