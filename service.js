@@ -290,20 +290,29 @@ function findMembers(reqData, callback){
 		callback(result);
 	});
 }
+function unBlockSender(sender){
+	if(sender.is_block === 1){
+		var query = "UPDATE dronateam SET is_block = 0 WHERE name = '"+sender.name+"'";
+		executeQuery(query, (status, resultData)=>{
+			console.log('Updated');
+		});
+	}
+}
 function processGroup(reqData, callback){
 	var group = [];
 	var sender;
-	executeQuery('select dt.name, dt.mobile, dt.role, dr.auth_key, dr.auth_secret from dronateam dt, dronaroom dr where dt.is_block = 0 and dt.room = dr.room', (status, result)=>{
+	executeQuery('select dt.is_block, dt.name, dt.mobile, dt.role, dr.auth_key, dr.auth_secret from dronateam dt, dronaroom dr where dt.room = dr.room', (status, result)=>{
 		result.forEach((item, index) =>{
-			/*if(item.is_block !== 0)
-				return;*/
 			if(reqData.From === item.mobile){
 				sender = item;
 				return;
 			}
+			if(item.is_block !== 0)
+				return;
 			group.push(item);
 			
 		});
+		unBlockSender(sender);
 		//console.log(sender);
 		var message = formatMsg(TEMPLATE, [ sender.name, reqData.Body ]);
 		//console.log("message :: "+message);
