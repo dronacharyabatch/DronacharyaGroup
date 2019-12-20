@@ -1,7 +1,6 @@
 const http = require('http');
 const https = require('https');
 const btoa = require('btoa');
-//const fs = require('fs');
 var mysql = require('mysql');
 var TEMPLATE = "{0} :\n{1}";
 var whatsappPath = '/2010-04-01/Accounts/{0}/Messages.json';
